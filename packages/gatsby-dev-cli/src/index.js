@@ -82,7 +82,25 @@ gatsby-dev --set-path-to-repo /path/to/my/cloned/version/gatsby
 }
 
 // get list of packages from monorepo
-const monoRepoPackages = fs.readdirSync(path.join(gatsbyLocation, `packages`))
+const monoRepoPackages = fs
+  .readdirSync(path.join(gatsbyLocation, `packages`))
+  .map(dirName => {
+    try {
+      const localPkg = JSON.parse(
+        fs.readFileSync(
+          path.join(gatsbyLocation, `packages`, dirName, `package.json`)
+        )
+      )
+
+      if (localPkg?.name) {
+        return localPkg.name
+      }
+    } catch {
+      return dirName
+    }
+
+    return dirName
+  })
 
 const localPkg = JSON.parse(fs.readFileSync(`package.json`))
 // intersect dependencies with monoRepoPackages to get list of packages that are used
