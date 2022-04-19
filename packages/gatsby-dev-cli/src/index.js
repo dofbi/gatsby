@@ -82,6 +82,7 @@ gatsby-dev --set-path-to-repo /path/to/my/cloned/version/gatsby
 }
 
 // get list of packages from monorepo
+const packageNameToPath = new Map()
 const monoRepoPackages = fs
   .readdirSync(path.join(gatsbyLocation, `packages`))
   .map(dirName => {
@@ -93,12 +94,20 @@ const monoRepoPackages = fs
       )
 
       if (localPkg?.name) {
+        packageNameToPath.set(
+          localPkg.name,
+          path.join(gatsbyLocation, `packages`, dirName)
+        )
         return localPkg.name
       }
-    } catch {
-      return dirName
+    } catch (error) {
+      // fallback to generic one
     }
 
+    packageNameToPath.set(
+      dirName,
+      path.join(gatsbyLocation, `packages`, dirName)
+    )
     return dirName
   })
 
@@ -138,4 +147,5 @@ watch(gatsbyLocation, argv.packages, {
   scanOnce: argv.scanOnce,
   forceInstall: argv.forceInstall,
   monoRepoPackages,
+  packageNameToPath,
 })
