@@ -44,7 +44,14 @@ const traversePackagesDeps = ({
     let pkgJson
     try {
       const packageRoot = packageNameToPath.get(p)
-      pkgJson = require(path.join(packageRoot, `package.json`))
+      if (packageRoot) {
+        pkgJson = require(path.join(packageRoot, `package.json`))
+      } else {
+        console.error(`"${p}" package doesn't exist in monorepo.`)
+        // remove from seenPackages
+        seenPackages = seenPackages.filter(seenPkg => seenPkg !== p)
+        return
+      }
     } catch (e) {
       console.error(`"${p}" package doesn't exist in monorepo.`, e)
       // remove from seenPackages

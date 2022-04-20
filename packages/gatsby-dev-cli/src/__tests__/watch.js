@@ -183,8 +183,9 @@ describe(`watching`, () => {
       expect(chokidar.watch).toHaveBeenCalledWith([], expect.any(Object))
     })
 
-    it(`filters duplicate directories`, () => {
+    it.only(`filters duplicate directories`, () => {
       watch(process.cwd(), [`gatsby`, `gatsby`], {
+        ...args[2],
         localPackages: [`gatsby`],
       })
 
