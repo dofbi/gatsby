@@ -60,7 +60,7 @@ describe(
 
         cy.visit(`/`).waitForRouteChange()
         let didMock = false
-        cy.intercept("/app-data.json", req => {
+        cy.intercept("/page-data/app-data.json", req => {
           if (!didMock) {
             req.reply({
               webpackCompilationHash: mockHash,
@@ -96,7 +96,15 @@ describe(
       // and our data files (page-data and app-data) are for newer built.
       // We will mock both app-data (to change the hash) as well as example page-data
       // to simulate changes to static query hashes between builds.
-      it(`should force reload page if on initial load the html is not matching newest app/page-data`, () => {
+      it(
+        `should force reload page if on initial load the html is not matching newest app/page-data`, 
+        {
+          retries: {
+            // give this test a few more chances... this one is rough
+            runMode: 4,
+          },
+        },
+        () => {
         const mockHash = createMockCompilationHash()
 
         // trying to intercept just `/` seems to intercept all routes
@@ -106,7 +114,7 @@ describe(
         // We will mock `app-data` and `page-data` json responses one time (for initial load)
         let shouldMockAppDataRequests = true
         let shouldMockPageDataRequests = true
-        cy.intercept("/app-data.json", req => {
+        cy.intercept("/page-data/app-data.json", req => {
           if (shouldMockAppDataRequests) {
             req.reply({
               webpackCompilationHash: mockHash,
@@ -159,7 +167,7 @@ describe(
         cy.intercept(/^\/$/).as(`indexFetch`)
 
         // We will mock `app-data` and `page-data` json responses permanently
-        cy.intercept("/app-data.json", req => {
+        cy.intercept("/page-data/app-data.json", req => {
           req.reply({
             webpackCompilationHash: mockHash,
           })

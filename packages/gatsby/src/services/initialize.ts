@@ -26,6 +26,7 @@ import type { InternalJob } from "../utils/jobs/types"
 import { enableNodeMutationsDetection } from "../utils/detect-node-mutations"
 import { compileGatsbyFiles } from "../utils/parcel/compile-gatsby-files"
 import { resolveModule } from "../utils/module-resolver"
+import { writeGraphQLConfig } from "../utils/graphql-typegen/file-writes"
 
 interface IPluginResolution {
   resolve: string
@@ -496,15 +497,9 @@ export async function initialize({
   await fs.ensureDir(`${publicDirectory}/static`)
 
   // Init plugins once cache is initialized
-  if (_CFLAGS_.GATSBY_MAJOR === `4`) {
-    await apiRunnerNode(`onPluginInit`, {
-      parentSpan: activity.span,
-    })
-  } else {
-    await apiRunnerNode(`unstable_onPluginInit`, {
-      parentSpan: activity.span,
-    })
-  }
+  await apiRunnerNode(`onPluginInit`, {
+    parentSpan: activity.span,
+  })
 
   activity.end()
 
@@ -657,6 +652,14 @@ export async function initialize({
   })
 
   const workerPool = WorkerPool.create()
+
+  if (state.config.graphqlTypegen) {
+    telemetry.trackFeatureIsUsed(`GraphQLTypegen`)
+    // This is only run during `gatsby develop`
+    if (process.env.gatsby_executing_command === `develop`) {
+      writeGraphQLConfig(program)
+    }
+  }
 
   return {
     store,
